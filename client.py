@@ -26,7 +26,7 @@ if __name__ == '__main__':
     elif args.method == 'POST':
         client.send(f'POST {args.message}'.encode('utf-8'))
     elif args.method == 'OPTIONS':
-        client.send(f'OPTIONS {args.message}'.encode('utf-8'))
+        client.send(f'OPTIONS'.encode('utf-8'))
     response = client.recv(1024).decode('utf-8')
     print(f'You recieved: {response}')
 

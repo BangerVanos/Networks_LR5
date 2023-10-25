@@ -29,7 +29,7 @@ class Server:
 
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        logging.basicConfig(filename='server_log.log', filemode='a')
+        logging.basicConfig(filename='server_log.log', filemode='a', level=logging.INFO)
 
     def start_server(self):
         self.server.bind((self.hostname, self.port))
@@ -50,10 +50,11 @@ class Server:
                     data = data_info[1]
                     response = self.handle_post(data)
                 elif method == 'OPTIONS':
-                    response = 'Access-Control-Allow-Methods: GET, POST, OPTIONS'.encode('utf-8')
+                    response = (self.DEFAULT_HDRS['200'] +
+                                'Access-Control-Allow-Methods: GET, POST, OPTIONS').encode('utf-8')
                     logging.info(f'{datetime.datetime.now()} USED OPTIONS METHOD')
                 else:
-                    response = (self.DEFAULT_HDRS['500'] + 'Method does not exist').encode('utf-8')
+                    response = (self.DEFAULT_HDRS['500'] + 'WARNING: Method does not exist').encode('utf-8')
                     logging.warning(f'{datetime.datetime.now()} METHOD {method} DOES NOT EXIST')
                 client.send(response)
                 client.shutdown(socket.SHUT_WR)
@@ -72,21 +73,20 @@ class Server:
         except FileNotFoundError:
             logging.error(f'{datetime.datetime.now()} CANNOT SEND FILE WITH PATH {path}.'
                           f' FILE DOES NOT EXIST')
-            print(self.DEFAULT_HDRS['404'] + path + ' File not found')
-            return (self.DEFAULT_HDRS['404'] + path + ' File not found').encode('utf-8')
+            print(self.DEFAULT_HDRS['404'] + path + 'ERROR: File not found')
+            return (self.DEFAULT_HDRS['404'] + path + 'ERROR: File not found').encode('utf-8')
 
     def handle_post(self, data):
         try:
             headers = json.loads(data)
         except json.decoder.JSONDecodeError as err:
-            logging.error(f'{datetime.datetime.now()} CANNOT HANDLE DATA WITH JSON {data}. {err}'
-                          f' FILE DOES NOT EXIST')
+            logging.error(f'{datetime.datetime.now()} CANNOT HANDLE DATA WITH JSON {data}. {err}')
             return (self.DEFAULT_HDRS['500'] + f' {err}').encode('utf-8')
         logging.info(f'{datetime.datetime.now()} GET DATA FOR POST {data}')
         for key in headers:
             print(f'{key} - {headers[key]}')
         logging.info(f'{datetime.datetime.now()} HANDLED DATA WITH JSON {data}')
-        return (self.DEFAULT_HDRS['200'] + f'POST {data}').encode('utf-8')
+        return (self.DEFAULT_HDRS['200'] + f'POST: {data}').encode('utf-8')
 
 
 if __name__ == '__main__':
